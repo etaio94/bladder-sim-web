@@ -1,7 +1,7 @@
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { t } from '../i18n'
 import { useAppStore } from '../state/store'
@@ -80,8 +80,10 @@ const MOCK_RESTROOMS = {
 export function Restrooms() {
   const { state, setSimulation } = useAppStore()
   const nav = useNavigate()
+  const [ready, setReady] = useState(false)
   useEffect(() => {
     patchIcons()
+    setReady(true)
   }, [])
   const list = state.locale === 'en' ? MOCK_RESTROOMS.en : MOCK_RESTROOMS.he
   const center: LatLngExpression = list[0].position
@@ -109,35 +111,41 @@ export function Restrooms() {
         </button>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
-        <div className="h-72 w-full overflow-hidden rounded-xl ring-1 ring-slate-200">
-          <MapContainer
-            center={center}
-            zoom={15}
-            scrollWheelZoom={false}
-            style={{ height: '100%', width: '100%' }}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {list.map((r) => (
-              <Marker
-                key={r.name}
-                position={r.position as LatLngExpression}
-                icon={defaultIcon ?? undefined}
-              >
-                <Popup>
-                  <div className="space-y-1">
-                    <div className="font-semibold">{r.name}</div>
-                    <div className="text-sm">
-                      {r.distance} · {r.eta} · {r.open}
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 lg:p-4 shadow-sm space-y-4">
+        <div className="h-80 w-full overflow-hidden rounded-xl ring-1 ring-slate-200 bg-slate-50">
+          {ready ? (
+            <MapContainer
+              center={center}
+              zoom={15}
+              scrollWheelZoom={false}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {list.map((r) => (
+                <Marker
+                  key={r.name}
+                  position={r.position as LatLngExpression}
+                  icon={defaultIcon ?? undefined}
+                >
+                  <Popup>
+                    <div className="space-y-1">
+                      <div className="font-semibold">{r.name}</div>
+                      <div className="text-sm">
+                        {r.distance} · {r.eta} · {r.open}
+                      </div>
                     </div>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-slate-500">
+              {t(state.locale, 'waiting')}
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           {list.map((r) => (

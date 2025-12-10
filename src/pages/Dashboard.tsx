@@ -140,31 +140,29 @@ export function Dashboard() {
   }, [state.simulation])
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            {t(state.locale, 'dashboardTitle')}
-          </h1>
-          <p className="text-sm text-red-600">{t(state.locale, 'disclaimer')}</p>
-        </div>
-        <div className="text-sm text-slate-500">
-          {latest
-            ? `${t(state.locale, 'updated')} ${formatDate(latest.timestamp)}`
-            : t(state.locale, 'waiting')}
-        </div>
-      </div>
-
-      <button
-        onClick={runSimulation}
-        className="rounded-lg bg-purple-600 px-4 py-2 text-white shadow hover:bg-purple-700"
-      >
-        {t(state.locale, 'startSimulation')}
-      </button>
-
+    <div className="space-y-4">
       {latest ? (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-base font-semibold text-slate-900">
+                {t(state.locale, 'dashboardTitle')}
+              </div>
+              <div className="text-xs text-slate-500 shrink-0">
+                {latest
+                  ? `${t(state.locale, 'updated')} ${formatDate(latest.timestamp)}`
+                  : t(state.locale, 'waiting')}
+              </div>
+            </div>
+            <div className="rounded-xl bg-slate-50 px-3 py-2">
+              <p className="text-sm text-slate-600 mb-1">{t(state.locale, 'quickView')}</p>
+              <div className="text-lg font-bold text-slate-900">
+                {latest.fullnessPercent}% {t(state.locale, 'fullness')}
+              </div>
+              <p className="text-xs text-slate-600">
+                {t(state.locale, 'capacity')}: {latest.bladderVolumeMl} / {state.settings.capacityMl} מ״ל
+              </p>
+            </div>
             <FullnessBar
               percent={latest.fullnessPercent}
               label={t(state.locale, 'fullness')}
@@ -178,7 +176,7 @@ export function Dashboard() {
               <div className="flex-1 space-y-1">
                 <SensorRow
                   label={t(state.locale, 'temperature')}
-                  value={`${latest.temperatureC.toFixed(1)} °C`}
+                  value={`${latest.temperatureC.toFixed(1)}${state.locale === 'en' ? ' °C' : ' °C'}`}
                 />
                 <SensorRow label={t(state.locale, 'ph')} value={latest.ph.toFixed(1)} />
                 <SensorRow label={t(state.locale, 'hematuria')} value={`${latest.hematuriaLevel}`} />
@@ -188,7 +186,11 @@ export function Dashboard() {
                 />
                 <SensorRow
                   label={t(state.locale, 'flow')}
-                  value={`${latest.flowRateMlSec.toFixed(1)} מ״ל/שנ׳`}
+                  value={
+                    state.locale === 'en'
+                      ? `${latest.flowRateMlSec.toFixed(1)} ml/s`
+                      : `${latest.flowRateMlSec.toFixed(1)} מ״ל/שנ׳`
+                  }
                 />
                 <SensorRow
                   label={t(state.locale, 'ovIndex')}
@@ -196,12 +198,18 @@ export function Dashboard() {
                 />
                 <SensorRow
                   label={t(state.locale, 'ovEta')}
-                  value={formatDate(latest.ovulationPeakEta)}
+                  value={
+                    latest.ovulationPeakEta
+                      ? state.locale === 'en'
+                        ? new Intl.DateTimeFormat('en-GB').format(new Date(latest.ovulationPeakEta))
+                        : formatDate(latest.ovulationPeakEta)
+                      : '—'
+                  }
                 />
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
               <button
                 onClick={handleEmpty}
                 className="rounded-lg bg-emerald-600 px-4 py-2 text-white shadow hover:bg-emerald-700"
@@ -213,19 +221,19 @@ export function Dashboard() {
                   if (state.simulation === 'wait-restroom') continueAfterRestroom()
                   nav('/restrooms')
                 }}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-slate-800 hover:bg-slate-50"
               >
                 {t(state.locale, 'nearby')}
               </button>
               <button
                 onClick={() => nav('/history')}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700"
+                className="rounded-lg border border-slate-300 px-4 py-2 text-slate-800 hover:bg-slate-50"
               >
                 {t(state.locale, 'history')}
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
               <button
                 onClick={() => nav('/charts')}
                 className="rounded-lg border border-slate-300 px-4 py-2 text-slate-800 hover:bg-slate-50"
@@ -269,21 +277,19 @@ export function Dashboard() {
 
             <FlagsChips flags={flags} />
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-600 mb-2">{t(state.locale, 'quickView')}</p>
-            <div className="text-3xl font-bold text-slate-900">
-              {latest.fullnessPercent}% {t(state.locale, 'fullness')}
-            </div>
-            <p className="text-slate-600">
-              {t(state.locale, 'capacity')}: {latest.bladderVolumeMl} / {state.settings.capacityMl} מ״ל
-            </p>
-          </div>
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
           {t(state.locale, 'waiting')}
         </div>
       )}
+
+      <button
+        onClick={runSimulation}
+        className="w-full rounded-lg bg-purple-600 px-4 py-3 text-white shadow hover:bg-purple-700"
+      >
+        {t(state.locale, 'startSimulation')}
+      </button>
 
       {show75 && (
         <Modal
